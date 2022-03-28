@@ -1,0 +1,8 @@
+version: "3.7"
+services:
+    ws:
+        build: .
+        ports:
+            - "3050:80"
+        volumes:
+            - "/home/paul/Documents/pektin/pektin-ui/build/:/public/"
