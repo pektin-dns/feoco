@@ -1,8 +1,13 @@
 version: "3.7"
 services:
     ws:
-        build: .
+        build:
+            context: .
+            dockerfile: DevDockerfile
         ports:
             - "3050:80"
+        environment:
+            - CSP_CONNECT_SRC=*
         volumes:
-            - "/home/paul/Documents/pektin/pektin-ui/build/:/public/"
+            - /home/paul/Documents/pektin/pektin-ui/build/:/public/
+            - ./config.yml:/config.yml

@@ -1,6 +1,7 @@
 use flate2::Compression;
 use std::collections::HashMap;
 use std::convert::Infallible;
+use std::env;
 use std::io::Write;
 use walkdir::WalkDir;
 
@@ -8,6 +9,10 @@ use flate2::write::GzEncoder;
 use hyper::service::{make_service_fn, service_fn};
 
 use hyper::{Body, Request, Response, Server};
+
+mod config;
+
+use crate::config::{read_config, Config};
 
 const COMPRESSABLE_MIME_TYPES: [&str; 15] = [
     "text/css",
@@ -35,6 +40,12 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     let mut file_content_size: u128 = 0;
     let mut file_content_size_compressed: u128 = 0;
+
+    let config = read_config();
+    println!("{:?}", config);
+    for argument in env::args() {
+        println!("{}", argument);
+    }
 
     for entry in WalkDir::new(BASE_PATH) {
         let entry = entry?;
@@ -75,7 +86,12 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     let make_svc = make_service_fn(|_conn| {
         let fsmap = fsmap.clone();
-        async { Ok::<_, Infallible>(service_fn(move |req| hello(req, fsmap.clone()))) }
+        let config = config.clone();
+        async {
+            Ok::<_, Infallible>(service_fn(move |req| {
+                handle_request(req, fsmap.clone(), config.clone())
+            }))
+        }
     });
 
     let addr = ([0, 0, 0, 0], 80).into();
@@ -89,9 +105,10 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     Ok(())
 }
 
-async fn hello(
+async fn handle_request(
     req: Request<Body>,
     fsmap: HashMap<String, Vec<u8>>,
+    config: Config,
 ) -> Result<Response<Body>, Infallible> {
     let mut path = req.uri().path();
     let request_headers = req.headers();
@@ -106,7 +123,7 @@ async fn hello(
 
     if !fsmap.contains_key(path) {
         path = "/index.html";
-    }
+    };
 
     let access_path = if accept_gzip
         && COMPRESSABLE_MIME_TYPES
@@ -117,7 +134,11 @@ async fn hello(
     } else {
         String::from(path)
     };
-
+    /*
+        for header in config.headers.iter() {
+            res = res.header(header.0, header.1);
+        }
+    */
     println!("{}", access_path);
 
     let res = res
