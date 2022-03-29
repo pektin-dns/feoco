@@ -1,10 +1,8 @@
-use flate2::Compression;
 use std::collections::HashMap;
 use std::convert::Infallible;
-use std::io::Write;
+use std::sync::{Arc, RwLock};
 use walkdir::WalkDir;
 
-use flate2::write::GzEncoder;
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Request, Response, Server};
 
@@ -16,33 +14,22 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let entry = entry?;
         if entry.file_type().is_file() {
             let path = entry.path();
-            println!("{:?}", path);
             let path_str = path.to_str().unwrap();
             let file_content = std::fs::read(path_str).unwrap();
-
-            let mut z = GzEncoder::new(Vec::new(), Compression::best());
-            z.write_all(file_content.as_slice()).unwrap();
-
-            let file_content_gz = z.finish().unwrap();
-
-            println!("{:?},{:?}", file_content.len(), file_content_gz.len());
-
-            fsmap.insert(
-                String::from(path_str).replace("/public", ""),
-                file_content_gz,
-            );
+            fsmap.insert(String::from(path_str), file_content);
         }
     }
 
-    let fsmap = fsmap;
+    let wrapped_fsmap = Arc::new(fsmap);
+
     // For every connection, we must make a `Service` to handle all
     // incoming HTTP requests on said connection.
-    let make_svc = make_service_fn(|_conn| {
-        let fsmap = fsmap.clone();
+    let make_svc = make_service_fn(move |_conn| {
+        let fsmap = wrapped_fsmap.clone();
         // This is the `Service` that will handle the connection.
         // `service_fn` is a helper to convert a function that
         // returns a Response into a `Service`.
-        async { Ok::<_, Infallible>(service_fn(move |req| hello(req, fsmap.to_owned()))) }
+        async { Ok::<_, Infallible>(service_fn(move |req: Request<Body>| hello(req, fsmap))) }
     });
 
     let addr = ([0, 0, 0, 0], 80).into();
@@ -58,22 +45,14 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
 async fn hello(
     req: Request<Body>,
-    fsmap: HashMap<String, Vec<u8>>,
+    fsmap: Arc<HashMap<String, Vec<u8>>>,
 ) -> Result<Response<Body>, Infallible> {
-    let p = req.uri().path();
-    let path = if p == "/" { "/index.html" } else { p };
-
-    let res = Response::builder()
-        .header("content-encoding", "gzip")
-        .status(200)
-        .body(if fsmap.contains_key(path) {
-            Body::from(fsmap.get(path).unwrap().clone())
-        } else {
-            Body::from(fsmap.get("/index.html").unwrap().clone())
-        })
-        .unwrap();
-
-    Ok(res)
+    let path = req.uri().path();
+    if fsmap.contains_key(path) {
+        Ok(Response::new(Body::from(fsmap.get(path).unwrap().clone())))
+    } else {
+        Ok(Response::new(Body::from("Hello, World!")))
+    }
 }
 
 async fn shutdown_signal() {
