@@ -1,4 +1,4 @@
-
+cargo-features = ["strip"]
 [[bin]]
 name = "main"
 path = "src/main.rs"
@@ -16,13 +16,15 @@ hyper = { version = "0.14", features = ["server", "http1", "tcp"] }
 tokio = { version = "1", default-features = false, features = ["rt-multi-thread", "macros","signal"] }
 walkdir="2.3.2"
 flate2 = { version = "1.0.22" }
+mime_guess={ version = "2.0.4", default-features = false }
 
 
 [profile.release]
+strip = true
 codegen-units = 1
 debug = false
 debug-assertions = false
-lto = "fat"
+lto = true
 opt-level = 3
 panic = "abort"
 rpath = false

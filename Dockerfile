@@ -1,16 +1,17 @@
 # 0. BUILD STAGE
-FROM ekidd/rust-musl-builder:stable AS build
+FROM ekidd/rust-musl-builder:nightly-2021-12-23 AS build
 # only build deps in the first stage for faster builds
 COPY Cargo.toml Cargo.lock ./
 USER root
+RUN rustup component add rust-src --toolchain nightly-2021-12-23-x86_64-unknown-linux-gnu
 RUN cargo install cargo-build-deps
 RUN cargo build-deps --release
 RUN rm -f target/x86_64-unknown-linux-musl/release/deps/rust-web-server*
 # build
 COPY --chown=root:root src src
-RUN cargo build --release --bin main
+RUN cargo build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --release --bin main
 RUN strip target/x86_64-unknown-linux-musl/release/main
-RUN useradd rust-web-server
+RUN useradd -u 108934 -N rust-web-server
 
 # 1. APP STAGE
 FROM scratch

@@ -6,43 +6,76 @@ use walkdir::WalkDir;
 
 use flate2::write::GzEncoder;
 use hyper::service::{make_service_fn, service_fn};
+
 use hyper::{Body, Request, Response, Server};
+
+const COMPRESSABLE_MIME_TYPES: [&str; 15] = [
+    "text/css",
+    "application/javascript",
+    "text/html",
+    "image/svg+xml",
+    "text/xml",
+    "text/plain",
+    "application/json",
+    "application/yaml",
+    "application/yml",
+    "application/toml",
+    "text/markdown",
+    "application/wasm",
+    "application/json-p",
+    "text/javascript",
+    "text/css",
+];
+
+const BASE_PATH: &str = "/public";
 
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let mut fsmap: HashMap<String, Vec<u8>> = HashMap::new();
 
-    for entry in WalkDir::new("/public/") {
+    let mut file_content_size: u128 = 0;
+    let mut file_content_size_compressed: u128 = 0;
+
+    for entry in WalkDir::new(BASE_PATH) {
         let entry = entry?;
         if entry.file_type().is_file() {
             let path = entry.path();
-            println!("{:?}", path);
             let path_str = path.to_str().unwrap();
             let file_content = std::fs::read(path_str).unwrap();
 
-            let mut z = GzEncoder::new(Vec::new(), Compression::best());
-            z.write_all(file_content.as_slice()).unwrap();
+            file_content_size += file_content.len() as u128;
+            if COMPRESSABLE_MIME_TYPES.contains(
+                &mime_guess::from_path(path_str)
+                    .first_or_octet_stream()
+                    .as_ref(),
+            ) {
+                println!("{:?}", path_str);
 
-            let file_content_gz = z.finish().unwrap();
+                let mut z = GzEncoder::new(Vec::new(), Compression::best());
+                z.write_all(file_content.as_slice()).unwrap();
 
-            println!("{:?},{:?}", file_content.len(), file_content_gz.len());
+                let file_content_gz = z.finish().unwrap();
+                file_content_size_compressed += file_content_gz.len() as u128;
 
-            fsmap.insert(
-                String::from(path_str).replace("/public", ""),
-                file_content_gz,
-            );
+                fsmap.insert(
+                    format!("{}_gz", String::from(path_str).replace(BASE_PATH, "")),
+                    file_content_gz,
+                );
+            }
+            fsmap.insert(String::from(path_str).replace(BASE_PATH, ""), file_content);
         }
     }
 
-    let fsmap = fsmap;
-    // For every connection, we must make a `Service` to handle all
-    // incoming HTTP requests on said connection.
+    println!(
+        "In memory size: {} MiB\nIn memory size compressed: {} MiB\nTotal size: {} MiB",
+        file_content_size / 1024 / 1024,
+        file_content_size_compressed / 1024 / 1024,
+        (file_content_size + file_content_size_compressed) / 1024 / 1024
+    );
+
     let make_svc = make_service_fn(|_conn| {
         let fsmap = fsmap.clone();
-        // This is the `Service` that will handle the connection.
-        // `service_fn` is a helper to convert a function that
-        // returns a Response into a `Service`.
-        async { Ok::<_, Infallible>(service_fn(move |req| hello(req, fsmap.to_owned()))) }
+        async { Ok::<_, Infallible>(service_fn(move |req| hello(req, fsmap.clone()))) }
     });
 
     let addr = ([0, 0, 0, 0], 80).into();
@@ -60,17 +93,35 @@ async fn hello(
     req: Request<Body>,
     fsmap: HashMap<String, Vec<u8>>,
 ) -> Result<Response<Body>, Infallible> {
-    let p = req.uri().path();
-    let path = if p == "/" { "/index.html" } else { p };
+    let mut path = req.uri().path();
+    let request_headers = req.headers();
+    let accept_gzip = request_headers
+        .get("accept-encoding")
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .contains("gzip");
 
-    let res = Response::builder()
-        .header("content-encoding", "gzip")
-        .status(200)
-        .body(if fsmap.contains_key(path) {
-            Body::from(fsmap.get(path).unwrap().clone())
-        } else {
-            Body::from(fsmap.get("/index.html").unwrap().clone())
-        })
+    let mut res = Response::builder().status(200);
+
+    if !fsmap.contains_key(path) {
+        path = "/index.html";
+    }
+
+    let access_path = if accept_gzip
+        && COMPRESSABLE_MIME_TYPES
+            .contains(&mime_guess::from_path(path).first_or_octet_stream().as_ref())
+    {
+        res = res.header("content-encoding", "gzip");
+        format!("{}_gz", path)
+    } else {
+        String::from(path)
+    };
+
+    println!("{}", access_path);
+
+    let res = res
+        .body(Body::from(fsmap.get(&access_path).unwrap().clone()))
         .unwrap();
 
     Ok(res)
