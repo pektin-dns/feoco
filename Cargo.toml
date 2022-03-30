@@ -13,11 +13,11 @@ edition = "2021"
 
 [dependencies]
 hyper = { version = "0.14", features = ["server", "http1", "tcp"] }
-tokio = { version = "1", default-features = false, features = ["rt-multi-thread", "macros","signal"] }
+tokio = { version = "1",  features = ["full"] }
 walkdir="2.3.2"
-flate2 = { version = "1.0.22" }
+flate2 = { version = "1.0.22",default-features = false, features =["miniz_oxide"] }
 mime_guess={ version = "2.0.4", default-features = false }
-serde = {version="1.0",features = ["derive"]}
+serde = {version="1.0",features = ["derive","std"] , default-features = false}
 serde_yaml = {version="0.8"}
 regex="1.0.0"
 
