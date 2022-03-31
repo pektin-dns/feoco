@@ -1,41 +1,21 @@
-use flate2::Compression;
+use hashbrown::HashMap;
 use hyper::{
     header::{HeaderName, HeaderValue},
     HeaderMap,
 };
+use rust_web_server::read_to_memory;
 use std::convert::Infallible;
-use std::io::Write;
-use std::{collections::HashMap, str::FromStr};
-use walkdir::WalkDir;
+use std::str::FromStr;
 
-use flate2::write::GzEncoder;
 use hyper::service::{make_service_fn, service_fn};
 use lazy_static::lazy_static;
 
 use hyper::{Body, Request, Response, Server};
+
 mod config;
-
 use crate::config::{read_config, Config};
-
-const COMPRESSABLE_MIME_TYPES: [&str; 15] = [
-    "text/css",
-    "application/javascript",
-    "text/html",
-    "image/svg+xml",
-    "text/xml",
-    "text/plain",
-    "application/json",
-    "application/yaml",
-    "application/yml",
-    "application/toml",
-    "text/markdown",
-    "application/wasm",
-    "application/json-p",
-    "text/javascript",
-    "text/css",
-];
-
-const BASE_PATH: &str = "/public";
+mod lib;
+use crate::lib::COMPRESSABLE_MIME_TYPES;
 
 lazy_static! {
     static ref CONFIG: Config = read_config();
@@ -50,32 +30,6 @@ lazy_static! {
 
 lazy_static! {
     static ref ALL_MAP: HeaderMap = create_header_map(HeaderMapType::All);
-}
-
-pub enum HeaderMapType {
-    Document,
-    All,
-}
-
-pub fn create_header_map(map_type: HeaderMapType) -> HeaderMap<HeaderValue> {
-    let mut headers: HeaderMap<HeaderValue> = HeaderMap::new();
-    let config = &CONFIG;
-    if matches!(map_type, HeaderMapType::Document) {
-        for header in &config.headers.document {
-            headers.insert(
-                HeaderName::from_str(header.0).unwrap(),
-                HeaderValue::from_str(header.1).unwrap(),
-            );
-        }
-    }
-    for header in &config.headers.all {
-        headers.insert(
-            HeaderName::from_str(header.0).unwrap(),
-            HeaderValue::from_str(header.1).unwrap(),
-        );
-    }
-
-    headers
 }
 
 #[tokio::main]
@@ -97,52 +51,6 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     server.await?;
 
     Ok(())
-}
-
-fn read_to_memory() -> HashMap<String, Vec<u8>> {
-    let mut fsmap: HashMap<String, Vec<u8>> = HashMap::new();
-
-    let mut file_content_size: u128 = 0;
-    let mut file_content_size_compressed: u128 = 0;
-
-    for entry in WalkDir::new(BASE_PATH) {
-        let entry = entry.unwrap();
-        if entry.file_type().is_file() {
-            let path = entry.path();
-            let path_str = path.to_str().unwrap();
-            let file_content = std::fs::read(path_str).unwrap();
-
-            file_content_size += file_content.len() as u128;
-            if COMPRESSABLE_MIME_TYPES.contains(
-                &mime_guess::from_path(path_str)
-                    .first_or_octet_stream()
-                    .as_ref(),
-            ) {
-                println!("{:?}", path_str);
-
-                let mut z = GzEncoder::new(Vec::new(), Compression::best());
-                z.write_all(file_content.as_slice()).unwrap();
-
-                let file_content_gz = z.finish().unwrap();
-                file_content_size_compressed += file_content_gz.len() as u128;
-
-                fsmap.insert(
-                    format!("{}_gz", String::from(path_str).replace(BASE_PATH, "")),
-                    file_content_gz,
-                );
-            }
-            fsmap.insert(String::from(path_str).replace(BASE_PATH, ""), file_content);
-        }
-    }
-
-    println!(
-        "In memory size: {} MiB\nIn memory size compressed: {} MiB\nTotal memory size: {} MiB",
-        file_content_size / 1024 / 1024,
-        file_content_size_compressed / 1024 / 1024,
-        (file_content_size + file_content_size_compressed) / 1024 / 1024
-    );
-
-    fsmap
 }
 
 async fn handle_request(req: Request<Body>) -> Result<Response<Body>, Infallible> {
@@ -186,11 +94,28 @@ async fn handle_request(req: Request<Body>) -> Result<Response<Body>, Infallible
 
     Ok(res)
 }
-/*
-async fn shutdown_signal() {
-    // Wait for the CTRL+C signal
-    tokio::signal::ctrl_c()
-        .await
-        .expect("failed to install CTRL+C signal handler");
+pub enum HeaderMapType {
+    Document,
+    All,
 }
-*/
+
+pub fn create_header_map(map_type: HeaderMapType) -> HeaderMap<HeaderValue> {
+    let mut headers: HeaderMap<HeaderValue> = HeaderMap::new();
+    let config = &CONFIG;
+    if matches!(map_type, HeaderMapType::Document) {
+        for header in &config.headers.document {
+            headers.insert(
+                HeaderName::from_str(header.0).unwrap(),
+                HeaderValue::from_str(header.1).unwrap(),
+            );
+        }
+    }
+    for header in &config.headers.all {
+        headers.insert(
+            HeaderName::from_str(header.0).unwrap(),
+            HeaderValue::from_str(header.1).unwrap(),
+        );
+    }
+
+    headers
+}
