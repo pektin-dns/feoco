@@ -1,6 +1,6 @@
 # **FEOCO `pektin/feoco`**
 
-[git.y.gy](https://git.y.gy/pektin/feoco) | [GitLab](https://gitlab.com/pektin/feoco) | [GitHub](https://github.com/pektin-dns/feoco) | [DockerHub](https://hub.docker.com/r/pektin/feoco)
+[git.y.gy](https://git.y.gy/pektin/feoco) | [GitLab](https://gitlab.com/pektin/feoco) | [GitHub](https://github.com/pektin-dns/feoco) | [dockerhub](https://hub.docker.com/r/pektin/feoco)
 
 A container for serving **static** web applications, with **client side routing**, from memory. Intended for use behind a reverse proxy that handles routing and TLS termination.
 
@@ -126,7 +126,7 @@ RUN yarn build
 
 
 
-# 1. execution stage NOTE: You can't do much here as this is a image from scratch
+# 1. execution stage; NOTE: You can't do much here as this is a image from scratch
 FROM pektin/feoco
 COPY --from=build-stage /app/build/ /public
 COPY config.yml /config.yml
