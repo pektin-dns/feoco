@@ -1,4 +1,6 @@
-# **FEOCO**
+# **FEOCO `pektin/feoco`**
+
+[git.y.gy](https://git.y.gy/pektin/feoco) | [GitLab](https://gitlab.com/pektin/feoco) | [GitHub](https://github.com/pektin-dns/feoco) | [DockerHub](https://hub.docker.com/r/pektin/feoco)
 
 A container for serving **static** web applications, with **client side routing**, from memory. Intended for use behind a reverse proxy that handles routing and TLS termination.
 
@@ -97,6 +99,10 @@ headers:
 
 Your config **has to contain the above fields at minimum**, else the server will not launch.
 
+This image internally listens to port 80 on all interfaces `http://0.0.0.0:80`
+
+It does **not** run as root.
+
 ### Your Apps Dockerfile
 
 `Dockerfile`
@@ -193,3 +199,23 @@ headers:
         referrer-policy: no-referrer
         permissions-policy: accelerometer=(), ambient-light-sensor=(), autoplay=(), battery=(), camera=(), cross-origin-isolated=(), display-capture=(), document-domain=(), encrypted-media=(), execution-while-not-rendered=(), execution-while-out-of-viewport=(), fullscreen=(), geolocation=(), gyroscope=(), keyboard-map=(), magnetometer=(), microphone=(), midi=(), navigation-override=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), sync-xhr=(), usb=(), web-share=(), xr-spatial-tracking=(), clipboard-read=(), clipboard-write=(), gamepad=(), speaker-selection=(), conversion-measurement=(), focus-without-user-activation=(), hid=(), idle-detection=(), interest-cohort=(), serial=(), sync-script=(), trust-token-redemption=(), window-placement=(), vertical-scroll=()
 ```
+
+# Thanks to
+
+## [hyper](https://github.com/hyperium/hyper)
+
+## [min-sized-rust](https://github.com/johnthagen/min-sized-rust)
+
+## [serde](https://github.com/serde-rs/serde)
+
+an all the other package authors of the packages found in the `Cargo.toml`
+
+# License MIT
+
+Copyright 2022 Paul Colin Hennig
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
