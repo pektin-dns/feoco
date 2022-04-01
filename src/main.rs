@@ -1,9 +1,9 @@
+use feoco::read_to_memory;
 use hashbrown::HashMap;
 use hyper::{
     header::{HeaderName, HeaderValue},
     HeaderMap,
 };
-use rust_web_server::read_to_memory;
 use std::convert::Infallible;
 use std::str::FromStr;
 

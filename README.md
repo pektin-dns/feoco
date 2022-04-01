@@ -6,13 +6,13 @@ Created to be a perfect match for serving preact/react/vue or similar apps.
 
 # **265KiB container size**
 
-# **~230k HTTP requests/second**
+# **~280k HTTP requests/second**
 
 nginx does ~30k on the same machine
 
-# Important Note
+# Note
 
-This is **not** a fully featured web server for routing proxying or anything other than serving small single page apps (that use client side routing). You should use traefik, actix, nginx or something else for that.
+This is **not** a fully featured web server for routing proxying or anything other than serving small single page apps (that use client side routing).
 
 # Easy Header configuration
 
@@ -60,7 +60,7 @@ headers:
 # ...
 ```
 
-## Set Headers on all requests and/or on the document seperately
+## Set Headers on all requests and/or on the document separately
 
 ```yaml
 variable-prefix: "$"
@@ -95,7 +95,7 @@ headers:
     document: {}
 ```
 
-Your config **has to contain the above fields at minimum** else the server will not launch.
+Your config **has to contain the above fields at minimum**, else the server will not launch.
 
 ### Your Apps Dockerfile
 

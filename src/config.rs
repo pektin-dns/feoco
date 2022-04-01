@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Deserialize, Debug, Clone, Serialize)]
 pub struct Config {
     pub headers: Headers,
+    #[serde(rename = "variable-prefix")]
     pub variable_prefix: String,
 }
 #[derive(Deserialize, Debug, Clone, Serialize)]
