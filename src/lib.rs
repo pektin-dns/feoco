@@ -61,8 +61,6 @@ pub fn read_to_memory() -> HashMap<String, Vec<u8>> {
                     .first_or_octet_stream()
                     .as_ref(),
             ) {
-                println!("{:?}", path_str);
-
                 let mut z = GzEncoder::new(Vec::new(), Compression::best());
                 z.write_all(file_content.as_slice()).unwrap();
 
