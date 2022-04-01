@@ -10,19 +10,16 @@ RUN rm -f target/x86_64-unknown-linux-musl/release/deps/rust-web-server*
 COPY --chown=root:root src src
 RUN cargo build --bin main
 RUN strip target/x86_64-unknown-linux-musl/debug/main
-RUN useradd -u 108934 -N rust-web-server
+RUN useradd -u 108934 -N h
 
 # 1. APP STAGE
 FROM scratch
 WORKDIR /app
-COPY --from=build /home/rust/src/target/x86_64-unknown-linux-musl/debug/main ./rust-web-server
+COPY --from=build /home/rust/src/target/x86_64-unknown-linux-musl/debug/main ./h
 COPY --from=build /etc/passwd /etc/passwd
-# permissions
-#RUN addgroup -g 1000 rust-web-server
-#RUN adduser -D -s /bin/sh -u 1000 -G rust-web-server rust-web-server
-#RUN chown rust-web-server:rust-web-server rust-web-server
-USER rust-web-server
+COPY config.yml /config.yml
+USER h
 STOPSIGNAL SIGKILL
 
 # run it 
-ENTRYPOINT ["./rust-web-server"]
+ENTRYPOINT ["./h"]

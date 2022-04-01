@@ -1,6 +1,6 @@
 version: "3.7"
 services:
-    ws-prod:
+    ws-dev:
         build:
             context: .
             dockerfile: Dockerfile
@@ -10,4 +10,3 @@ services:
             - CSP_CONNECT_SRC=*
         volumes:
             - /home/paul/Documents/pektin/pektin-ui/build/:/public/
-            - ./config.yml:/config.yml

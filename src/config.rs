@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Deserialize, Debug, Clone, Serialize)]
 pub struct Config {
     pub headers: Headers,
+    pub variable_prefix: String,
 }
 #[derive(Deserialize, Debug, Clone, Serialize)]
 pub struct Headers {
@@ -21,23 +22,35 @@ pub fn read_config() -> Config {
     for header in config.headers.all.clone() {
         config.headers.all.insert(
             header.0.to_string(),
-            header.1.replace('\n', " ").replace("  ", " "),
+            header
+                .1
+                .replace('\n', " ")
+                .replace('\r', " ")
+                .replace("  ", " "),
         );
     }
     for header in config.headers.document.clone() {
         config.headers.document.insert(
             header.0.to_string(),
-            header.1.replace('\n', " ").replace("  ", " "),
+            header
+                .1
+                .replace('\n', " ")
+                .replace('\r', " ")
+                .replace("  ", " "),
         );
     }
+
     config
 }
 
 pub fn replace_variables(mut config_file: String) -> String {
+    let first_config: Config = serde_yaml::from_str(&config_file).unwrap();
     for (key, value) in std::env::vars() {
-        config_file = config_file.replace(format!("${}", key).as_str(), &value);
+        config_file = config_file.replace(
+            format!("{}{}", first_config.variable_prefix, key).as_str(),
+            &value,
+        );
     }
-    println!("{}", config_file);
 
     config_file
 }

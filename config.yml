@@ -1,42 +1,6 @@
+variable-prefix: "$"
 headers:
     # on every resource
-    all:
-        Strict-Transport-Security: max-age=315360000; includeSubdomains; preload
-        Cache-Control: public, max-age=31536000
-
+    all: {}
     # only on the document
-    document:
-        Content-Security-Policy: >-
-            default-src 'none';
-
-            script-src 'self' 'wasm-unsafe-eval' 'wasm-eval';
-                        
-            style-src 'self' 
-            'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 
-            'sha256-gixU7LtMo8R4jqjOifcbHB/dd61eJUxZHCC6RXtUKOQ=' 
-            'sha256-Dn0vMZLidJplZ4cSlBMg/F5aa7Vol9dBMHzBF4fGEtk=' 
-            'sha256-jX63Mkkw8FdoZGmV5pbbuvq3E6LQBUufPYlkJKSN5T4=' 
-            'sha256-1Gz2g8CAv9x9EG1JNQpf4aunCZm7ce4CiOAYSHedtk8=' 
-            'sha256-wWWgqv2I1eslvJWGxct2TL1YWfkLJFISQBUcrfymfYI=' 
-            'sha256-AviY8ukUNt0M5R4KQLfmyNSp65NLzZO6kpngDHGe2f8='; 
-
-            manifest-src 'self';
-
-            connect-src $CSP_CONNECT_SRC; 
-
-            img-src 'self'; 
-
-            font-src 'self'; 
-
-            base-uri 'none'; 
-
-            form-action 'none'; 
-
-            frame-ancestors 'none';
-        x-frame-options: DENY
-        x-content-type-options: nosniff
-        x-permitted-cross-domain-policies: none
-        x-download-options: noopen
-        x-xss-protection: 1; mode=block
-        referrer-policy: no-referrer
-        permissions-policy: accelerometer=(), ambient-light-sensor=(), autoplay=(), battery=(), camera=(), cross-origin-isolated=(), display-capture=(), document-domain=(), encrypted-media=(), execution-while-not-rendered=(), execution-while-out-of-viewport=(), fullscreen=(), geolocation=(), gyroscope=(), keyboard-map=(), magnetometer=(), microphone=(), midi=(), navigation-override=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), sync-xhr=(), usb=(), web-share=(), xr-spatial-tracking=(), clipboard-read=(), clipboard-write=(), gamepad=(), speaker-selection=(), conversion-measurement=(), focus-without-user-activation=(), hid=(), idle-detection=(), interest-cohort=(), serial=(), sync-script=(), trust-token-redemption=(), window-placement=(), vertical-scroll=()
+    document: {}
