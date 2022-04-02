@@ -10,7 +10,7 @@ RUN rm -f target/x86_64-unknown-linux-musl/release/deps/feoco*
 COPY --chown=root:root src src
 RUN cargo build --bin main
 RUN strip target/x86_64-unknown-linux-musl/debug/main
-RUN useradd -u 6515315 -N feoco
+RUN useradd -u 50001 -N feoco
 
 # 1. APP STAGE
 FROM scratch
