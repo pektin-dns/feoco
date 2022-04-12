@@ -17,7 +17,7 @@ FROM scratch
 WORKDIR /app
 COPY --from=build /home/rust/src/target/x86_64-unknown-linux-musl/debug/main ./feoco
 COPY --from=build /etc/passwd /etc/passwd
-COPY config.yml /config.yml
+COPY devConfig.yml /config.yml
 USER feoco
 STOPSIGNAL SIGKILL
 

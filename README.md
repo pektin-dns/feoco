@@ -73,6 +73,8 @@ headers:
     # only on the document
     document:
         This-Header-Will-Only-Be-Set: On the document (index.html)
+# prevent all matching paths from beeing served from memory and read them from disk instead; if the path is included it is matched
+no-memory: []
 ```
 
 # Getting started by Example
@@ -92,9 +94,11 @@ It looks like this:
 variable-prefix: "$"
 headers:
     # on every resource
-    all: {} # empty "rust hashmap"/"js object"
+    all: {} # empty "rust hashmap" or "JS object"
     # only on the document
     document: {}
+# prevent all matching paths from beeing served from memory and read them from disk instead; if the path is included it is matched
+no-memory: []
 ```
 
 Your config **has to contain the above fields at minimum**, else the server will not launch.
@@ -123,7 +127,6 @@ RUN yarn
 COPY . .
 RUN sh scripts/install-modules.sh
 RUN yarn build
-
 
 
 # 1. execution stage; NOTE: You can't do much here as this is a image from scratch
@@ -198,6 +201,8 @@ headers:
         x-xss-protection: 1; mode=block
         referrer-policy: no-referrer
         permissions-policy: accelerometer=(), ambient-light-sensor=(), autoplay=(), battery=(), camera=(), cross-origin-isolated=(), display-capture=(), document-domain=(), encrypted-media=(), execution-while-not-rendered=(), execution-while-out-of-viewport=(), fullscreen=(), geolocation=(), gyroscope=(), keyboard-map=(), magnetometer=(), microphone=(), midi=(), navigation-override=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), sync-xhr=(), usb=(), web-share=(), xr-spatial-tracking=(), clipboard-read=(), clipboard-write=(), gamepad=(), speaker-selection=(), conversion-measurement=(), focus-without-user-activation=(), hid=(), idle-detection=(), interest-cohort=(), serial=(), sync-script=(), trust-token-redemption=(), window-placement=(), vertical-scroll=()
+# prevent all matching paths from beeing served from memory and read them from disk instead; if the path is included it is matched
+no-memory: ["/volume/images/", ".jpg"]
 ```
 
 # Thanks to

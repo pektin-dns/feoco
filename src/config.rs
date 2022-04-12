@@ -7,6 +7,8 @@ pub struct Config {
     pub headers: Headers,
     #[serde(rename = "variable-prefix")]
     pub variable_prefix: String,
+    #[serde(rename = "no-memory")]
+    pub no_memory: Vec<String>,
 }
 #[derive(Deserialize, Debug, Clone, Serialize)]
 pub struct Headers {
