@@ -9,7 +9,31 @@ use std::convert::Infallible;
 use std::str::FromStr;
 
 use flate2::write::GzEncoder;
-use urlencoding::encode;
+use percent_encoding::{utf8_percent_encode, AsciiSet, NON_ALPHANUMERIC};
+
+const URL_ENCODING: &AsciiSet = &NON_ALPHANUMERIC
+    .remove(b':')
+    .remove(b'/')
+    .remove(b'?')
+    .remove(b'#')
+    .remove(b'[')
+    .remove(b']')
+    .remove(b'@')
+    .remove(b'!')
+    .remove(b'$')
+    .remove(b'&')
+    .remove(b'\'')
+    .remove(b'(')
+    .remove(b')')
+    .remove(b'*')
+    .remove(b'+')
+    .remove(b',')
+    .remove(b'-')
+    .remove(b'_')
+    .remove(b';')
+    .remove(b'.')
+    .remove(b'=')
+    .remove(b'%');
 
 use hyper::service::{make_service_fn, service_fn};
 use lazy_static::lazy_static;
@@ -145,12 +169,10 @@ pub fn read_to_memory() -> (HashMap<String, Vec<u8>>, HashMap<String, String>) {
 
             let path_repl_base_path = String::from(path_str).replace(BASE_PATH, "");
             let path_repl_base_path = path_repl_base_path.as_str();
-            let path_url_encoded = encode(path_repl_base_path)
-                .as_ref()
-                .replace("%2F", "/")
-                .replace("%28", "(")
-                .replace("%29", ")")
-                .replace("%2C", ",");
+
+            let path_url_encoded =
+                utf8_percent_encode(path_repl_base_path, URL_ENCODING).to_string();
+
             println!("{}", path_url_encoded);
 
             let is_compressable_type = COMPRESSABLE_MIME_TYPES.contains(
