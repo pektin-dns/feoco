@@ -9,6 +9,7 @@ use std::convert::Infallible;
 use std::str::FromStr;
 
 use flate2::write::GzEncoder;
+use urlencoding::encode;
 
 use hyper::service::{make_service_fn, service_fn};
 use lazy_static::lazy_static;
@@ -137,8 +138,8 @@ pub fn read_to_memory() -> (HashMap<String, Vec<u8>>, HashMap<String, String>) {
     for entry in recursive_read_dir(BASE_PATH) {
         if entry.file_type().unwrap().is_file() {
             let path = entry.path();
-            let path_str = path.to_str().unwrap().replace(' ', "%20");
-            let path_str = path_str.as_str();
+            let path_str = encode(path.to_str().unwrap());
+            let path_str = path_str.as_ref();
 
             let file_content = std::fs::read(path_str).unwrap();
             let no_memory = config.no_memory.iter().any(|nm| path_str.contains(nm));
