@@ -3,7 +3,7 @@ services:
     ws-prod:
         build:
             context: .
-            dockerfile: Dockerfile
+            dockerfile: dev.Dockerfile
         ports:
             - "3050:80"
         environment:

@@ -138,13 +138,20 @@ pub fn read_to_memory() -> (HashMap<String, Vec<u8>>, HashMap<String, String>) {
     for entry in recursive_read_dir(BASE_PATH) {
         if entry.file_type().unwrap().is_file() {
             let path = entry.path();
-            let path_str = encode(path.to_str().unwrap());
-            let path_str = path_str.as_ref();
+            let path_str = path.to_str().unwrap();
 
             let file_content = std::fs::read(path_str).unwrap();
             let no_memory = config.no_memory.iter().any(|nm| path_str.contains(nm));
 
             let path_repl_base_path = String::from(path_str).replace(BASE_PATH, "");
+            let path_repl_base_path = path_repl_base_path.as_str();
+            let path_url_encoded = encode(path_repl_base_path)
+                .as_ref()
+                .replace("%2F", "/")
+                .replace("%28", "(")
+                .replace("%29", ")")
+                .replace("%2C", ",");
+            println!("{}", path_url_encoded);
 
             let is_compressable_type = COMPRESSABLE_MIME_TYPES.contains(
                 &mime_guess::from_path(path_str)
@@ -153,7 +160,7 @@ pub fn read_to_memory() -> (HashMap<String, Vec<u8>>, HashMap<String, String>) {
             );
 
             if no_memory {
-                not_in_mem_map.insert(path_repl_base_path, path_str.into());
+                not_in_mem_map.insert(path_url_encoded, path_str.into());
             } else {
                 file_content_size += file_content.len() as u128;
                 if is_compressable_type {
@@ -163,9 +170,9 @@ pub fn read_to_memory() -> (HashMap<String, Vec<u8>>, HashMap<String, String>) {
                     let file_content_gz = z.finish().unwrap();
                     file_content_size_compressed += file_content_gz.len() as u128;
 
-                    fsmap.insert(format!("{}_gz", path_repl_base_path), file_content_gz);
+                    fsmap.insert(format!("{}_gz", path_url_encoded), file_content_gz);
                 }
-                fsmap.insert(path_repl_base_path, file_content);
+                fsmap.insert(path_url_encoded, file_content);
             }
         }
     }
