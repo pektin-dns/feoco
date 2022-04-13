@@ -22,10 +22,10 @@ mod lib;
 use crate::lib::COMPRESSABLE_MIME_TYPES;
 
 lazy_static! {
-    static ref CONFIG: Config = read_config();
-    static ref PAGES: (HashMap<String, Vec<u8>>, HashMap<String, String>) = read_to_memory();
-    static ref DOCUMENT_MAP: HeaderMap = create_header_map(HeaderMapType::Document);
-    static ref ALL_MAP: HeaderMap = create_header_map(HeaderMapType::All);
+    pub static ref CONFIG: Config = read_config();
+    pub static ref PAGES: (HashMap<String, Vec<u8>>, HashMap<String, String>) = read_to_memory();
+    pub static ref DOCUMENT_MAP: HeaderMap = create_header_map(HeaderMapType::Document);
+    pub static ref ALL_MAP: HeaderMap = create_header_map(HeaderMapType::All);
 }
 
 #[tokio::main]
@@ -137,7 +137,9 @@ pub fn read_to_memory() -> (HashMap<String, Vec<u8>>, HashMap<String, String>) {
     for entry in recursive_read_dir(BASE_PATH) {
         if entry.file_type().unwrap().is_file() {
             let path = entry.path();
-            let path_str = path.to_str().unwrap();
+            let path_str = path.to_str().unwrap().replace(' ', "%20");
+            let path_str = path_str.as_str();
+
             let file_content = std::fs::read(path_str).unwrap();
             let no_memory = config.no_memory.iter().any(|nm| path_str.contains(nm));
 
