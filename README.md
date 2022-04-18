@@ -6,7 +6,7 @@ A container for serving **static** web applications, with **client side routing*
 
 Created to be a perfect match for serving preact/react/vue or similar apps.
 
-# **265KiB container size**
+# **265 KiB container size**
 
 # **~280k HTTP requests/second**
 
