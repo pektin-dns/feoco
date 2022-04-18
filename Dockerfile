@@ -11,7 +11,7 @@ RUN cargo build-deps --release
 RUN rm -f target/x86_64-unknown-linux-musl/release/deps/feoco*
 # build
 COPY --chown=root:root src src
-RUN cargo build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --release --bin main
+RUN cargo build -Z build-std=std --release --bin main
 RUN strip target/x86_64-unknown-linux-musl/release/main
 RUN upx --best --lzma target/x86_64-unknown-linux-musl/release/main
 RUN useradd -u 50001 -N feoco

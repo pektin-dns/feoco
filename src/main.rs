@@ -78,7 +78,6 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 async fn handle_request(req: Request<Body>) -> Result<Response<Body>, Infallible> {
     let fsmap = &PAGES.0;
     let on_disk_map = &PAGES.1;
-
     let mut path = req.uri().path();
     let on_disk = on_disk_map.contains_key(path);
     let in_memory = fsmap.contains_key(path);
