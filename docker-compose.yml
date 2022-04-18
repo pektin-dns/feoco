@@ -4,6 +4,7 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
+        image: pektin/feoco
         ports:
             - "3050:80"
         environment:

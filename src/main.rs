@@ -1,15 +1,15 @@
 use feoco::{recursive_read_dir, BASE_PATH};
-use flate2::Compression;
 use hashbrown::HashMap;
 use hyper::{
     header::{HeaderName, HeaderValue},
     HeaderMap,
 };
-use std::convert::Infallible;
-use std::str::FromStr;
+use percent_encoding::{utf8_percent_encode, AsciiSet, NON_ALPHANUMERIC};
+use std::{convert::Infallible, io::Read};
+use std::{io::Cursor, str::FromStr};
 
 use flate2::write::GzEncoder;
-use percent_encoding::{utf8_percent_encode, AsciiSet, NON_ALPHANUMERIC};
+use flate2::Compression;
 
 const URL_ENCODING: &AsciiSet = &NON_ALPHANUMERIC
     .remove(b':')
@@ -88,6 +88,12 @@ async fn handle_request(req: Request<Body>) -> Result<Response<Body>, Infallible
         .to_str()
         .unwrap()
         .contains("gzip");
+    let accept_br = request_headers
+        .get("accept-encoding")
+        .unwrap_or(&HeaderValue::from_static(""))
+        .to_str()
+        .unwrap()
+        .contains("br");
 
     let mut res = Response::builder().status(200);
 
@@ -111,10 +117,16 @@ async fn handle_request(req: Request<Body>) -> Result<Response<Body>, Infallible
         let res = res.body(Body::from(file)).unwrap();
         Ok(res)
     } else {
-        let access_path = if accept_gzip && COMPRESSABLE_MIME_TYPES.contains(&content_type.as_ref())
-        {
-            res = res.header("content-encoding", "gzip");
-            format!("{}_gz", path)
+        let access_path = if COMPRESSABLE_MIME_TYPES.contains(&content_type.as_ref()) {
+            if accept_br {
+                res = res.header("content-encoding", "br");
+                format!("{}_br", path)
+            } else if accept_gzip {
+                res = res.header("content-encoding", "gzip");
+                format!("{}_gz", path)
+            } else {
+                String::from(path)
+            }
         } else {
             String::from(path)
         };
@@ -156,7 +168,8 @@ pub fn read_to_memory() -> (HashMap<String, Vec<u8>>, HashMap<String, String>) {
     let mut not_in_mem_map: HashMap<String, String> = HashMap::new();
     let config = &CONFIG;
     let mut file_content_size: u128 = 0;
-    let mut file_content_size_compressed: u128 = 0;
+    let mut file_content_size_compressed_gz: u128 = 0;
+    let mut file_content_size_compressed_br: u128 = 0;
 
     for entry in recursive_read_dir(BASE_PATH) {
         if entry.file_type().unwrap().is_file() {
@@ -189,9 +202,17 @@ pub fn read_to_memory() -> (HashMap<String, Vec<u8>>, HashMap<String, String>) {
                     z.write_all(file_content.as_slice()).unwrap();
 
                     let file_content_gz = z.finish().unwrap();
-                    file_content_size_compressed += file_content_gz.len() as u128;
+                    file_content_size_compressed_gz += file_content_gz.len() as u128;
+
+                    let reader = Cursor::new(&file_content);
+                    let mut file_content_br: Vec<u8> = Vec::new();
+                    brotli::CompressorReader::new(reader, 4096, 11, 21)
+                        .read_to_end(&mut file_content_br)
+                        .unwrap();
+                    file_content_size_compressed_br += file_content_br.len() as u128;
 
                     fsmap.insert(format!("{}_gz", path_url_encoded), file_content_gz);
+                    fsmap.insert(format!("{}_br", path_url_encoded), file_content_br);
                 }
                 fsmap.insert(path_url_encoded, file_content);
             }
@@ -199,10 +220,13 @@ pub fn read_to_memory() -> (HashMap<String, Vec<u8>>, HashMap<String, String>) {
     }
 
     println!(
-        "In memory size: {} MiB\nIn memory size compressed: {} MiB\nTotal memory size: {} MiB",
-        file_content_size / 1024 / 1024,
-        file_content_size_compressed / 1024 / 1024,
-        (file_content_size + file_content_size_compressed) / 1024 / 1024
+        "In memory size: {} KiB\nIn memory size compressed gzip: {} KiB\nIn memory size compressed brotli: {} KiB\nTotal memory size: {} KiB",
+        file_content_size / 1024 ,
+        file_content_size_compressed_gz / 1024 ,
+        file_content_size_compressed_br / 1024 ,
+        (file_content_size + file_content_size_compressed_gz + file_content_size_compressed_br)
+            / 1024
+            
     );
 
     (fsmap, not_in_mem_map)
