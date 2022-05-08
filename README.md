@@ -6,11 +6,15 @@ A container for serving **static** web applications, with **client side routing*
 
 Created to be a perfect match for serving preact/react/vue or similar apps.
 
-# **265 KiB container size**
+# **609 KB container size**
+
+half of that comes from brotli support
 
 # **~280k HTTP requests/second**
 
 nginx does ~30k on the same machine
+
+# automatic brotli, gzip or no compression depending on file type and browser support
 
 # Note
 

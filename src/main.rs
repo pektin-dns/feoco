@@ -33,6 +33,7 @@ const URL_ENCODING: &AsciiSet = &NON_ALPHANUMERIC
     .remove(b';')
     .remove(b'.')
     .remove(b'=')
+    .remove(b'~')
     .remove(b'%');
 
 use hyper::service::{make_service_fn, service_fn};
@@ -220,7 +221,7 @@ pub fn read_to_memory() -> (HashMap<String, Vec<u8>>, HashMap<String, String>) {
     }
 
     println!(
-        "In memory size: {} KiB\nIn memory size compressed gzip: {} KiB\nIn memory size compressed brotli: {} KiB\nTotal memory size: {} KiB",
+        "\n\nIn memory size: {} KiB\nIn memory size compressed gzip: {} KiB\nIn memory size compressed brotli: {} KiB\nTotal memory size: {} KiB",
         file_content_size / 1024 ,
         file_content_size_compressed_gz / 1024 ,
         file_content_size_compressed_br / 1024 ,
