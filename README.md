@@ -6,7 +6,7 @@ A container for serving **static** web applications, with **client side routing*
 
 Created to be a perfect match for serving preact/react/vue or similar apps.
 
-# **609 KB container size**
+# **800 KB container size**
 
 half of that comes from brotli support
 
@@ -18,7 +18,7 @@ nginx does ~30k on the same machine
 
 # Note
 
-This is **not** a fully featured web server for routing proxying or anything other than serving small single page apps (that use client side routing).
+This is **not** a fully featured web server for routing proxying or anything other than serving single page apps (that use client side routing).
 
 # Easy Header configuration
 
