@@ -10,4 +10,4 @@ services:
         environment:
             - CSP_CONNECT_SRC=*
         volumes:
-            - /home/paul/Documents/wirnharter3/build/:/public/
+            - /home/paul/Documents/pektin/pektin-ui/build:/public/
