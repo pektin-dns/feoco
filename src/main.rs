@@ -106,11 +106,13 @@ async fn handle_request(req: Request<Body>) -> Result<Response<Body>, Infallible
 
     if content_type == "text/html" {
         res.headers_mut().unwrap().extend(DOCUMENT_MAP.clone());
+        res = res.header("content-type", format!("{}; charset=utf-8",content_type.as_ref()));
     } else {
         res.headers_mut().unwrap().extend(ALL_MAP.clone());
+        res = res.header("content-type", content_type.as_ref());
     }
 
-    res = res.header("content-type", content_type.as_ref());
+    
 
     if on_disk {
         let file = std::fs::read(on_disk_map.get(path).unwrap()).unwrap();
