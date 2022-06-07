@@ -6,7 +6,7 @@ A container for serving **static** web applications, with **client side routing*
 
 Created to be a perfect match for serving preact/react/vue or similar apps.
 
-# **800 KB container size**
+# **870 KB container size**
 
 half of that comes from brotli support
 

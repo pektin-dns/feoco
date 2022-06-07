@@ -70,10 +70,15 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let server = Server::bind(&addr).serve(make_svc);
 
     println!("Listening on http://{}", addr);
-    //.with_graceful_shutdown(shutdown_signal())
-    server.await?;
+    server.with_graceful_shutdown(shutdown_signal()).await?;
 
     Ok(())
+}
+
+async fn shutdown_signal() {
+    tokio::signal::ctrl_c()
+        .await
+        .expect("failed to install CTRL+C signal handler");
 }
 
 async fn handle_request(req: Request<Body>) -> Result<Response<Body>, Infallible> {
