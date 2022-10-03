@@ -22,6 +22,10 @@ lazy_static="1.3.0"
 hashbrown = {version = "0.12" ,default-features = false, features = ["ahash"] }
 percent-encoding = "2.1.0"
 
+[target.'cfg(not(target_env = "msvc"))'.dependencies]
+tikv-jemallocator = "0.5"
+
+
 [profile.release]
 codegen-units = 1
 debug = false
