@@ -1,5 +1,5 @@
 # 0. BUILD STAGE
-FROM ekidd/rust-musl-builder AS build
+FROM clux/muslrust:stable AS build
 # build deps
 USER root
 RUN apt-get update && apt-get install upx -y
@@ -18,10 +18,11 @@ RUN useradd -u 50001 -N feoco
 # 1. APP STAGE
 FROM scratch
 WORKDIR /app
-COPY --from=build /home/rust/src/target/x86_64-unknown-linux-musl/release/main ./feoco
+COPY --from=build /volume/target/x86_64-unknown-linux-musl/release/main ./feoco
 COPY --from=build /etc/passwd /etc/passwd
 COPY config.yml /config.yml
 USER feoco
 STOPSIGNAL SIGKILL
+EXPOSE 80
 # run it 
 ENTRYPOINT ["./feoco"]
