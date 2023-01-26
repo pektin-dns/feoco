@@ -6,7 +6,7 @@ A container for serving **static** web applications, with **client side routing*
 
 Created to be a perfect match for serving preact/react/vue or similar apps.
 
-# **870 KB container size**
+# **1MB container size**
 
 half of that comes from brotli support
 
@@ -30,7 +30,7 @@ You can use variables with the variable prefix from the config file:
 
 ```yaml
 # set prefix
-variable-prefix: "$"
+variablePrefix: "$"
 headers:
     all:
         someHeader: $MY_VAR # use variable with prefix from above
@@ -59,7 +59,7 @@ services:
 ...the config from above will be rendered like so:
 
 ```yaml
-variable-prefix: "$"
+variablePrefix: "$"
 headers:
     all:
         someHeader: hello
@@ -69,7 +69,7 @@ headers:
 ## Set Headers on all requests and/or on the document separately
 
 ```yaml
-variable-prefix: "$"
+variablePrefix: "$"
 headers:
     # on every resource
     all:
@@ -78,7 +78,7 @@ headers:
     document:
         This-Header-Will-Only-Be-Set: On the document (index.html)
 # prevent all matching paths from beeing served from memory and read them from disk instead; if the path is included it is matched
-no-memory: []
+noMemory: []
 ```
 
 # Getting started by Example
@@ -95,14 +95,14 @@ An empty default config is mounted in the base image.
 It looks like this:
 
 ```yaml
-variable-prefix: "$"
+variablePrefix: "$"
 headers:
     # on every resource
     all: {} # empty "rust hashmap" or "JS object"
     # only on the document
     document: {}
 # prevent all matching paths from beeing served from memory and read them from disk instead; if the path is included it is matched
-no-memory: []
+noMemory: []
 ```
 
 Your config **has to contain the above fields at minimum**, else the server will not launch.
@@ -161,7 +161,7 @@ services:
 `config.yml`
 
 ```yaml
-variable-prefix: "$"
+variablePrefix: "$"
 headers:
     # on every resource
     all:
@@ -206,7 +206,7 @@ headers:
         referrer-policy: no-referrer
         permissions-policy: accelerometer=(), ambient-light-sensor=(), autoplay=(), battery=(), camera=(), cross-origin-isolated=(), display-capture=(), document-domain=(), encrypted-media=(), execution-while-not-rendered=(), execution-while-out-of-viewport=(), fullscreen=(), geolocation=(), gyroscope=(), keyboard-map=(), magnetometer=(), microphone=(), midi=(), navigation-override=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), sync-xhr=(), usb=(), web-share=(), xr-spatial-tracking=(), clipboard-read=(), clipboard-write=(), gamepad=(), speaker-selection=(), conversion-measurement=(), focus-without-user-activation=(), hid=(), idle-detection=(), interest-cohort=(), serial=(), sync-script=(), trust-token-redemption=(), window-placement=(), vertical-scroll=()
 # prevent all matching paths from beeing served from memory and read them from disk instead; if the path is included it is matched
-no-memory: ["/volume/images/", ".jpg"]
+noMemory: ["/volume/images/", ".jpg"]
 ```
 
 # Thanks to

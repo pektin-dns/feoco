@@ -3,11 +3,10 @@ use std::{collections::HashMap, fs::read_to_string};
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Config {
     pub headers: Headers,
-    #[serde(rename = "variable-prefix")]
     pub variable_prefix: String,
-    #[serde(rename = "no-memory")]
     pub no_memory: Vec<String>,
 }
 #[derive(Deserialize, Debug, Clone, Serialize)]
